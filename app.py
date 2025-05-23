@@ -40,6 +40,8 @@ meeting_type = st.selectbox(
   ["Town Council", "Planning and Zoning Board"]
 )
 
+meeting_date = st.date_input("Select the date of the meeting.")
+
 # --- MEETING DATE INPUT ---
 if meeting_date:
   # --- CALCULATE LAST VALID NOTICE-SEND DATE (GREATER OR EQUAL TO TEN BUSINESS DAYS PRIOR)
