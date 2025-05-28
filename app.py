@@ -66,6 +66,6 @@ if meeting_date:
       "Mailing list generated", value=st.session_state[f"{key_prefix}_mailing_list_generated"])
 
   st.session_state[f"{key_prefix}_notices_mailed"] = st.checkbox(
-      "Notices mailed to recipients," value=st.session_state[f"{key_prefix}_notices_mailed"])
+      "Notices mailed to recipients", value=st.session_state[f"{key_prefix}_notices_mailed"])
 
   st.info("Task status will be remembered while this session remains active. Refreshing the app will reset progress.")
