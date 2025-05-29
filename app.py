@@ -18,8 +18,16 @@ def subtract_days_excluding_holidays(meeting_date, days_required):
             valid_days += 1
     return date
 
+def get_holidays_between(start_date, end_date):
+    return {date: name for date, name in us_holidays.items() if start_date <= date <= end_date}
+
 # --- App header ---
 st.title("Town Meeting Notice Deadline Calculator")
+
+# --- Custom policy settings ---
+st.markdown("### Policy Settings")
+notice_window = st.number_input("Required valid business days before meeting", min_value=5, max_value=30, value=10, step=1)
+posting_delay = st.number_input("Newspaper publication delay (calendar days)", min_value=1, max_value=10, value=3, step=1)
 
 # --- User inputs ---
 meeting_type = st.selectbox("Meeting Type", ["Town Council", "Planning & Zoning Board"])
@@ -27,24 +35,35 @@ meeting_date = st.date_input("Meeting Date")
 
 # --- Run logic only if a meeting date is selected ---
 if meeting_date:
-    # Calculate deadlines
-    deadline = subtract_days_excluding_holidays(meeting_date, 10)
-    recommended_send = deadline - timedelta(days=3)
     today = datetime.today().date()
 
-    # Display deadlines
-    st.markdown("### Deadlines")
+    # Calculate notice deadline
+    deadline = subtract_days_excluding_holidays(meeting_date, notice_window)
+    recommended_send = deadline - timedelta(days=posting_delay)
+
+    st.markdown("### Calculated Deadlines")
     st.write(f"Meeting Date: {meeting_date.strftime('%A, %B %d, %Y')}")
     st.write(f"Last Day to Send Notice to Newspaper: {deadline.strftime('%A, %B %d, %Y')}")
-    st.write(f"Recommended Send Date (3-day buffer): {recommended_send.strftime('%A, %B %d, %Y')}")
+    st.write(f"Recommended Send Date (buffer of {posting_delay} days): {recommended_send.strftime('%A, %B %d, %Y')}")
 
-    # Status alert
     if today > deadline:
         st.error("Deadline missed. Notice may not be published in time.")
+
     elif today > recommended_send:
-        st.warning("Within 3-day buffer. Send notice as soon as possible.")
+        st.warning("Within buffer window. Send notice as soon as possible.")
+
     else:
         st.success("You're within the safe deadline range.")
+
+    # --- Show holidays between today and meeting ---
+    st.markdown("### Upcoming Holidays")
+    upcoming_holidays = get_holidays_between(today, meeting_date)
+    if upcoming_holidays:
+        for h_date, h_name in sorted(upcoming_holidays.items()):
+            st.write(f"{h_date.strftime('%A, %B %d, %Y')}: {h_name}")
+
+    else:
+        st.info("No federal holidays between now and the meeting date.")
 
     # --- Stateless session-based task tracker ---
     st.markdown("### Task Checklist")
