@@ -89,40 +89,42 @@ if meeting_date:
 
     st.info("Task status will be remembered while this session remains active. Refreshing the app will reset progress.")
 
-    st.markdown("## Batch Meeting Deadline Calculator")
+st.markdown("## Batch Meeting Deadline Calculator (Manual Entry)")
 
-    if "batch_meetings" not in st.session_state:
-        st.session_state.batch_meetings = []
-    # Input form
-    
-    with st.form("add_meeting_form"):
-        col2, col2 = st.columns(2)
-        with col1:
-            new_type = st.selectbox("Meeting Type", ["Town Council", "Planning & Zoning Board"], key="batch_type")
-        with col2:
-            new_date = st.date_input("Meeting Date", key="batch_date")
+if "batch_meetings" not in st.session_state:
+    st.session_state.batch_meetings = []
 
-        submitted = st.form_submit_button("Add Meeting")
-        if submitted:
-            st.session_state.batch_meetings.append({"meeting_type": new_type, "meeting_date": new_date})
+# Input form
+with st.form("add_meeting_form"):
+    col1, col2 = st.columns(2)
+    with col1:
+        new_type = st.selectbox("Meeting Type", ["Town Council", "Planning & Zoning Board"], key="batch_type")
+    with col2:
+        new_date = st.date_input("Meeting Date", key="batch_date")
 
-    # Display and calculate deadlines
-    if st.session_state.batch_meetings:
-        st.markdown("### Calculated Deadlines")
+    submitted = st.form_submit_button("Add Meeting")
+    if submitted:
+        st.session_state.batch_meetings.append({"meeting_type": new_type, "meeting_date": new_date})
 
-        calc_rows = []
-        for entry in st.session_state.batch_meetings:
-            m_type = entry["meeting_type"]
-            m_date = entry["meeting_date"]
-            deadline = subtract_days_excluding_holidays(m_date, notice_window)
-            recommended = deadline - timedelta(days=posting_delay)
-            calc_rows.append({
-                "meeting_type": m_type,
-                "meeting_date": m_date,
-                "last_day_to_send_notice": deadline,
-                "recommended_send_date": recommended
-            })
-        results_df = pd.DataFrame(calc_rows)
-        st.dataframe(result_df)
-        csv_out = result_df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download Deadline Schedule CSV", csv_out, file_name="deadline_schedule.csv")
+# Display and calculate deadlines
+if st.session_state.batch_meetings:
+    st.markdown("### Calculated Deadlines")
+
+    calc_rows = []
+    for entry in st.session_state.batch_meetings:
+        m_type = entry["meeting_type"]
+        m_date = entry["meeting_date"]
+        deadline = subtract_days_excluding_holidays(m_date, notice_window)
+        recommended = deadline - timedelta(days=posting_delay)
+        calc_rows.append({
+            "meeting_type": m_type,
+            "meeting_date": m_date,
+            "last_day_to_send_notice": deadline,
+            "recommended_send_date": recommended
+        })
+
+    result_df = pd.DataFrame(calc_rows)
+    st.dataframe(result_df)
+
+    csv_out = result_df.to_csv(index=False).encode("utf-8")
+    st.download_button("Download Deadline Schedule CSV", csv_out, file_name="deadline_schedule.csv")
